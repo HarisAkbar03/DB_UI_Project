@@ -1,13 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="viewmodel.SignUpController">
-    <TextField fx:id="userNameField" promptText="Enter your username" />
-    <TextField fx:id="passwordField" promptText="Enter your password" />
-    <TextField fx:id="confirmPasswordField" promptText="Confirm your password" />
-    <Button text="Create Account" onAction="#createNewAccount"/>
-    <Button text="Back to Login" onAction="#goBack"/>
-</VBox>
+<GridPane fx:id="rootpane" alignment="CENTER" prefHeight="750.0" prefWidth="1100.0" styleClass="grid_pane" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="viewmodel.SignUpController">
+    <columnConstraints>
+        <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" prefWidth="300.0" />
+        <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" prefWidth="500.0" />
+        <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" prefWidth="200.0" />
+        <ColumnConstraints hgrow="ALWAYS" minWidth="300.0" prefWidth="400.0" />
+        <ColumnConstraints hgrow="ALWAYS" minWidth="150.0" prefWidth="250.0" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="50.0" prefHeight="70.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+
+    <children>
+        <!-- Title Section -->
+        <HBox alignment="CENTER" prefHeight="103.0" prefWidth="811.0" GridPane.columnSpan="5" GridPane.rowIndex="0">
+            <children>
+                <Label alignment="CENTER" prefHeight="114.0" prefWidth="1362.0" style="-fx-border-color: BLACK;" styleClass="signup_title" text="Sign Up New User Account" textAlignment="CENTER" textFill="#111386" wrapText="true">
+                    <font>
+                        <Font name="System Bold" size="30.0" />
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+
+        <!-- Full Name Field -->
+        <Label alignment="CENTER" prefHeight="23.0" prefWidth="156.0" styleClass="signup_label" text="Full Name" textAlignment="RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
+        <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="1">
+            <TextField fx:id="userNameField" promptText="Full Name" style="-fx-border-color: BLACK;" prefWidth="400.0" minWidth="300.0"/>
+        </VBox>
+
+        <!-- Email Field -->
+        <Label alignment="CENTER" prefHeight="23.0" prefWidth="156.0" styleClass="signup_label" text="Email" textAlignment="RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
+        <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="2">
+            <TextField fx:id="emailField" promptText="email_id@domain.com" style="-fx-border-color: BLACK;" prefWidth="400.0" minWidth="300.0"/>
+        </VBox>
+
+        <!-- Password Field -->
+        <Label alignment="CENTER" prefHeight="23.0" prefWidth="156.0" styleClass="signup_label" text="Password" textAlignment="RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
+        <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="3">
+            <PasswordField fx:id="passwordField" style="-fx-border-color: BLACK;" prefWidth="400.0" minWidth="300.0"/>
+        </VBox>
+
+        <!-- Confirm Password Field -->
+        <Label alignment="CENTER" prefHeight="23.0" prefWidth="156.0" styleClass="signup_label" text="Confirm Password" textAlignment="RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
+        <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="4">
+            <PasswordField fx:id="confirmPasswordField" style="-fx-border-color: BLACK;" prefWidth="400.0" minWidth="300.0"/>
+        </VBox>
+
+        <!-- Buttons Section -->
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="5" GridPane.rowIndex="5">
+            <children>
+                <Button fx:id="createNewAccount" mnemonicParsing="false" onAction="#createNewAccount" prefHeight="43.0" prefWidth="199.0" style="-fx-background-color: GREY; -fx-border-color: BLACK;" text="Create Account" textFill="WHITE">
+                    <font>
+                        <Font name="System Bold" size="15.0" />
+                    </font>
+                </Button>
+                <Button fx:id="goBack" mnemonicParsing="false" onAction="#goBack" prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: Gray; -fx-border-color: BLACK;" text="Back to Login" textFill="WHITE">
+                    <font>
+                        <Font name="System Bold" size="14.0" />
+                    </font>
+                </Button>
+            </children>
+        </HBox>
+    </children>
+</GridPane>
