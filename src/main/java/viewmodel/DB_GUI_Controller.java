@@ -1,5 +1,6 @@
 package viewmodel;
 
+import com.opencsv.exceptions.CsvValidationException;
 import dao.DbConnectivityClass;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -21,12 +22,19 @@ import javafx.stage.Stage;
 import model.Person;
 import service.MyLogger;
 
-import java.io.File;
+import java.io.*;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
 
 public class DB_GUI_Controller implements Initializable {
 
@@ -34,7 +42,7 @@ public class DB_GUI_Controller implements Initializable {
     private Label statusLabel;
 
     @FXML
-    private Button addButton, editButton, deleteButton;
+    private Button addButton, editButton, deleteButton, exportCSVButton, importCSVButton;
 
     @FXML
     private MenuItem editMenuItem, deleteMenuItem, addMenuItem;
@@ -144,7 +152,6 @@ public class DB_GUI_Controller implements Initializable {
         clearForm();
 
         statusLabel.setText("Record added successfully!");
-
     }
 
     @FXML
@@ -203,7 +210,6 @@ public class DB_GUI_Controller implements Initializable {
         data.add(index, p2);
         tv.getSelectionModel().select(index);
         statusLabel.setText("Record updated successfully!");
-
     }
 
     @FXML
@@ -214,7 +220,6 @@ public class DB_GUI_Controller implements Initializable {
         data.remove(index);
         tv.getSelectionModel().select(index);
         statusLabel.setText("Record deleted successfully!");
-
     }
 
     @FXML
@@ -229,26 +234,6 @@ public class DB_GUI_Controller implements Initializable {
     protected void addRecord() {
         showSomeone();
     }
-
-    @FXML
-    protected void selectedItemTV(MouseEvent mouseEvent) {
-        Person p = tv.getSelectionModel().getSelectedItem();
-        if (p != null) {
-            first_name.setText(p.getFirstName());
-            last_name.setText(p.getLastName());
-            department.setText(p.getDepartment());
-            email.setText(p.getEmail());
-            imageURL.setText(p.getImageURL());
-            majorComboBox.setValue(Major.valueOf(p.getMajor()));
-
-            // Enable buttons for editing/deleting
-            editButton.setDisable(false);
-            deleteButton.setDisable(false);
-            if (editMenuItem != null) editMenuItem.setDisable(false);
-            if (deleteMenuItem != null) deleteMenuItem.setDisable(false);
-        }
-    }
-
     public void lightTheme(ActionEvent actionEvent) {
         try {
             Scene scene = menuBar.getScene();
@@ -301,6 +286,77 @@ public class DB_GUI_Controller implements Initializable {
             MyLogger.makeLog(
                     results.fname + " " + results.lname + " " + results.major);
         });
+    }
+
+
+    @FXML
+    protected void selectedItemTV(MouseEvent mouseEvent) {
+        Person p = tv.getSelectionModel().getSelectedItem();
+        if (p != null) {
+            first_name.setText(p.getFirstName());
+            last_name.setText(p.getLastName());
+            department.setText(p.getDepartment());
+            email.setText(p.getEmail());
+            imageURL.setText(p.getImageURL());
+            majorComboBox.setValue(Major.valueOf(p.getMajor()));
+
+            // Enable buttons for editing/deleting
+            editButton.setDisable(false);
+            deleteButton.setDisable(false);
+            if (editMenuItem != null) editMenuItem.setDisable(false);
+            if (deleteMenuItem != null) deleteMenuItem.setDisable(false);
+        }
+    }
+
+    @FXML
+    protected void exportToCSV() {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+            File file = fileChooser.showSaveDialog(null);
+
+            if (file != null) {
+                try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
+                    // Writing header
+                    writer.writeNext(new String[]{"ID", "First Name", "Last Name", "Department", "Major", "Email", "Image URL"});
+
+                    // Writing data
+                    for (Person person : data) {
+                        writer.writeNext(new String[]{String.valueOf(person.getId()), person.getFirstName(), person.getLastName(),
+                                person.getDepartment(), person.getMajor(), person.getEmail(), person.getImageURL()});
+                    }
+                }
+                statusLabel.setText("CSV Exported Successfully!");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            statusLabel.setText("Error exporting CSV.");
+        }
+    }
+
+    @FXML
+    protected void importFromCSV() {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+            File file = fileChooser.showOpenDialog(null);
+
+            if (file != null) {
+                try (CSVReader reader = new CSVReader(new FileReader(file))) {
+                    String[] nextLine;
+                    reader.readNext(); // Skip header
+                    while ((nextLine = reader.readNext()) != null) {
+                        Person person = new Person(Integer.parseInt(nextLine[0]), nextLine[1], nextLine[2], nextLine[3],
+                                nextLine[4], nextLine[5], nextLine[6]);
+                        data.add(person);
+                    }
+                }
+                statusLabel.setText("CSV Imported Successfully!");
+            }
+        } catch (IOException | CsvValidationException e) {
+            e.printStackTrace();
+            statusLabel.setText("Error importing CSV.");
+        }
     }
 
     // Enum for Major
