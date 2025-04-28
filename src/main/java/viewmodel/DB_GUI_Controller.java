@@ -13,14 +13,17 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.converter.DefaultStringConverter;
 import model.Person;
 import service.MyLogger;
+import javafx.beans.property.SimpleStringProperty;
 
 import java.io.*;
 import java.net.URL;
@@ -72,39 +75,83 @@ public class DB_GUI_Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
+            tv.setEditable(true); // Allow editing
+
             tv_id.setCellValueFactory(new PropertyValueFactory<>("id"));
-            tv_fn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-            tv_ln.setCellValueFactory(new PropertyValueFactory<>("lastName"));
-            tv_department.setCellValueFactory(new PropertyValueFactory<>("department"));
-            tv_major.setCellValueFactory(new PropertyValueFactory<>("major"));
-            tv_email.setCellValueFactory(new PropertyValueFactory<>("email"));
+
+            tv_fn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFirstName()));
+            tv_fn.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+            tv_fn.setOnEditCommit(event -> {
+                Person p = event.getRowValue();
+                p.setFirstName(event.getNewValue());
+                cnUtil.editUser(p.getId(), p);
+            });
+
+            tv_ln.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLastName()));
+            tv_ln.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+            tv_ln.setOnEditCommit(event -> {
+                Person p = event.getRowValue();
+                p.setLastName(event.getNewValue());
+                cnUtil.editUser(p.getId(), p);
+            });
+
+            tv_department.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDepartment()));
+            tv_department.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+            tv_department.setOnEditCommit(event -> {
+                Person p = event.getRowValue();
+                p.setDepartment(event.getNewValue());
+                cnUtil.editUser(p.getId(), p);
+            });
+
+            tv_major.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMajor()));
+            tv_major.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+            tv_major.setOnEditCommit(event -> {
+                Person p = event.getRowValue();
+                p.setMajor(event.getNewValue());
+                cnUtil.editUser(p.getId(), p);
+            });
+
+            tv_email.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
+            tv_email.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+            tv_email.setOnEditCommit(event -> {
+                Person p = event.getRowValue();
+                p.setEmail(event.getNewValue());
+                cnUtil.editUser(p.getId(), p);
+            });
+
             tv.setItems(data);
 
-            // Disable buttons and menu items initially
             editButton.setDisable(true);
             deleteButton.setDisable(true);
             addButton.setDisable(true);
-
             if (editMenuItem != null) editMenuItem.setDisable(true);
             if (deleteMenuItem != null) deleteMenuItem.setDisable(true);
             if (addMenuItem != null) addMenuItem.setDisable(true);
 
-            // Initialize major ComboBox with enum values
             ObservableList<Major> majorOptions = FXCollections.observableArrayList(Major.values());
             majorComboBox.setItems(majorOptions);
-            majorComboBox.getSelectionModel().selectFirst();  // Set default selection
+            majorComboBox.getSelectionModel().selectFirst();
 
-            // Listener for TableView selection
             tv.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
                 boolean recordSelected = (newSelection != null);
                 editButton.setDisable(!recordSelected);
                 deleteButton.setDisable(!recordSelected);
-
                 if (editMenuItem != null) editMenuItem.setDisable(!recordSelected);
                 if (deleteMenuItem != null) deleteMenuItem.setDisable(!recordSelected);
             });
 
-            // Listeners for form fields to enable/disable Add button
+            // Detect click on empty space -> Add new empty record
+            tv.setOnMouseClicked(event -> {
+                if (tv.getSelectionModel().isEmpty() && event.getClickCount() == 2) {
+                    Person newPerson = new Person("", "", "", Major.Business.toString(), "", "");
+                    cnUtil.insertUser(newPerson);
+                    newPerson.setId(cnUtil.retrieveId(newPerson));
+                    data.add(newPerson);
+                    tv.getSelectionModel().select(newPerson);
+                }
+            });
+
+            // Validate fields
             first_name.textProperty().addListener((obs, oldText, newText) -> validateForm());
             last_name.textProperty().addListener((obs, oldText, newText) -> validateForm());
             department.textProperty().addListener((obs, oldText, newText) -> validateForm());
@@ -373,6 +420,57 @@ public class DB_GUI_Controller implements Initializable {
             this.lname = date;
             this.major = venue;
         }
-    }
+    }/*
+    @FXML
+    protected void exportToPDF() {
+        try {
+            // Count number of students by major
+            Map<String, Integer> majorCountMap = new HashMap<>();
+            for (Person person : data) {
+                String major = person.getMajor();
+                majorCountMap.put(major, majorCountMap.getOrDefault(major, 0) + 1);
+            }
+
+            // Create a document
+            Document document = new Document();
+            PdfWriter.getInstance(document, new FileOutputStream("StudentReport.pdf"));
+
+            // Open document to write
+            document.open();
+
+            // Title of the document
+            Paragraph title = new Paragraph("Student Report: Number of Students by Major", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            // Add a blank line
+            document.add(new Paragraph(" "));
+
+            // Create table with columns
+            PdfPTable table = new PdfPTable(2);
+            table.setWidthPercentage(100);
+
+            // Add table headers
+            table.addCell("Major");
+            table.addCell("Number of Students");
+
+            // Add data to the table
+            for (Map.Entry<String, Integer> entry : majorCountMap.entrySet()) {
+                table.addCell(entry.getKey());
+                table.addCell(entry.getValue().toString());
+            }
+
+            // Add table to document
+            document.add(table);
+
+            // Close the document
+            document.close();
+
+            statusLabel.setText("PDF Report Generated Successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            statusLabel.setText("Error generating PDF.");
+        }
+    }*/
 
 }
