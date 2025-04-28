@@ -2,8 +2,11 @@ module com.example.csc311_db_ui_semesterlongproject {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
-    requires java.prefs;
     requires com.opencsv;
+    requires java.desktop;
+    requires kernel;
+    requires layout;
+    requires java.prefs;
 
 
     opens viewmodel;

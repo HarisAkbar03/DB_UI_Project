@@ -1,5 +1,6 @@
 package viewmodel;
 
+import com.itextpdf.layout.properties.TextAlignment;
 import com.opencsv.exceptions.CsvValidationException;
 import dao.DbConnectivityClass;
 import javafx.application.Platform;
@@ -27,16 +28,20 @@ import javafx.beans.property.SimpleStringProperty;
 
 import java.io.*;
 import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.itextpdf.layout.Document;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+//import com.itextpdf.layout.property.TextAlignment;
 
 
 public class DB_GUI_Controller implements Initializable {
@@ -420,7 +425,8 @@ public class DB_GUI_Controller implements Initializable {
             this.lname = date;
             this.major = venue;
         }
-    }/*
+    }
+
     @FXML
     protected void exportToPDF() {
         try {
@@ -431,39 +437,34 @@ public class DB_GUI_Controller implements Initializable {
                 majorCountMap.put(major, majorCountMap.getOrDefault(major, 0) + 1);
             }
 
-            // Create a document
-            Document document = new Document();
-            PdfWriter.getInstance(document, new FileOutputStream("StudentReport.pdf"));
+            // Create PdfWriter and PdfDocument
+            PdfWriter writer = new PdfWriter(new FileOutputStream("StudentReport.pdf"));
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
 
-            // Open document to write
-            document.open();
-
-            // Title of the document
-            Paragraph title = new Paragraph("Student Report: Number of Students by Major", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
-            title.setAlignment(Element.ALIGN_CENTER);
+            // Title
+            Paragraph title = new Paragraph("Student Report: Number of Students by Major")
+                    .setFontSize(18)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER);
             document.add(title);
 
-            // Add a blank line
-            document.add(new Paragraph(" "));
+            document.add(new Paragraph("\n")); // Blank line
 
-            // Create table with columns
-            PdfPTable table = new PdfPTable(2);
-            table.setWidthPercentage(100);
+            // Create table with 2 columns
+            float[] columnWidths = {300f, 100f}; // Adjust widths
+            Table table = new Table(columnWidths);
 
-            // Add table headers
             table.addCell("Major");
             table.addCell("Number of Students");
 
-            // Add data to the table
             for (Map.Entry<String, Integer> entry : majorCountMap.entrySet()) {
                 table.addCell(entry.getKey());
                 table.addCell(entry.getValue().toString());
             }
 
-            // Add table to document
             document.add(table);
 
-            // Close the document
             document.close();
 
             statusLabel.setText("PDF Report Generated Successfully!");
@@ -471,6 +472,5 @@ public class DB_GUI_Controller implements Initializable {
             e.printStackTrace();
             statusLabel.setText("Error generating PDF.");
         }
-    }*/
-
+    }
 }
