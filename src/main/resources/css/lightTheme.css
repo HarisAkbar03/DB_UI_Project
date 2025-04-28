@@ -105,3 +105,10 @@
 	-fx-background-radius: 2em;
 
 }
+.status-bar {
+    -fx-alignment: center-left;
+    -fx-background-color: #d3ffd3;
+    -fx-padding: 10px;
+    -fx-text-fill: #006400;
+    -fx-font-size: 14px;
+}

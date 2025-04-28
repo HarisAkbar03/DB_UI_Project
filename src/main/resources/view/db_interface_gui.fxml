@@ -71,6 +71,8 @@
             </left>
             <bottom>
                 <HBox prefHeight="30.0" prefWidth="892.0" styleClass="admin_section" BorderPane.alignment="CENTER" />
+                <Label fx:id="statusLabel" text="" styleClass="status-bar" />
+
             </bottom>
             <right>
                 <VBox prefHeight="540.0" prefWidth="202.0" styleClass="text_field_pane" BorderPane.alignment="CENTER">
