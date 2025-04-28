@@ -26,8 +26,16 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DB_GUI_Controller implements Initializable {
+
+    @FXML
+    private Button addButton, editButton, deleteButton;
+
+    @FXML
+    private MenuItem editMenuItem, deleteMenuItem, addMenuItem;
 
     @FXML
     TextField first_name, last_name, department, major, email, imageURL;
@@ -40,9 +48,17 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     private TableColumn<Person, Integer> tv_id;
     @FXML
+    private ComboBox<Major> major;  // Ensure this is ComboBox<Major> and not TextField
+
+    @FXML
     private TableColumn<Person, String> tv_fn, tv_ln, tv_department, tv_major, tv_email;
     private final DbConnectivityClass cnUtil = new DbConnectivityClass();
     private final ObservableList<Person> data = cnUtil.getData();
+
+    // Enum for Major options
+    public enum Major {
+        CS, CPIS, English
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -54,22 +70,69 @@ public class DB_GUI_Controller implements Initializable {
             tv_major.setCellValueFactory(new PropertyValueFactory<>("major"));
             tv_email.setCellValueFactory(new PropertyValueFactory<>("email"));
             tv.setItems(data);
+
+            // Disable buttons and menu items initially
+            editButton.setDisable(true);
+            deleteButton.setDisable(true);
+            addButton.setDisable(true);
+
+            if (editMenuItem != null) editMenuItem.setDisable(true);
+            if (deleteMenuItem != null) deleteMenuItem.setDisable(true);
+            if (addMenuItem != null) addMenuItem.setDisable(true);
+
+            // Listener for TableView selection
+            tv.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+                boolean recordSelected = (newSelection != null);
+                editButton.setDisable(!recordSelected);
+                deleteButton.setDisable(!recordSelected);
+
+                if (editMenuItem != null) editMenuItem.setDisable(!recordSelected);
+                if (deleteMenuItem != null) deleteMenuItem.setDisable(!recordSelected);
+            });
+
+            // Listeners for form fields to enable/disable Add button
+            first_name.textProperty().addListener((obs, oldText, newText) -> validateForm());
+            last_name.textProperty().addListener((obs, oldText, newText) -> validateForm());
+            department.textProperty().addListener((obs, oldText, newText) -> validateForm());
+            email.textProperty().addListener((obs, oldText, newText) -> validateForm());
+            imageURL.textProperty().addListener((obs, oldText, newText) -> validateForm());
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private void validateForm() {
+        boolean valid = !first_name.getText().trim().isEmpty()
+                && !last_name.getText().trim().isEmpty()
+                && !department.getText().trim().isEmpty()
+                && isValidEmail(email.getText())
+                && !imageURL.getText().trim().isEmpty()
+                && !major.getSelectionModel().isEmpty(); // Ensure a major is selected
+
+        addButton.setDisable(!valid);
+
+        if (addMenuItem != null) {
+            addMenuItem.setDisable(!valid);
+        }
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
+
     @FXML
     protected void addNewRecord() {
-
-            Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
-                    major.getText(), email.getText(), imageURL.getText());
-            cnUtil.insertUser(p);
-            cnUtil.retrieveId(p);
-            p.setId(cnUtil.retrieveId(p));
-            data.add(p);
-            clearForm();
-
+        Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
+                major.getSelectionModel().getSelectedItem().toString(), email.getText(), imageURL.getText());
+        cnUtil.insertUser(p);
+        cnUtil.retrieveId(p);
+        p.setId(cnUtil.retrieveId(p));
+        data.add(p);
+        clearForm();
     }
 
     @FXML
@@ -77,7 +140,7 @@ public class DB_GUI_Controller implements Initializable {
         first_name.setText("");
         last_name.setText("");
         department.setText("");
-        major.setText("");
+        major.getSelectionModel().clearSelection();  // Clear the selection for major
         email.setText("");
         imageURL.setText("");
     }
@@ -119,7 +182,7 @@ public class DB_GUI_Controller implements Initializable {
         Person p = tv.getSelectionModel().getSelectedItem();
         int index = data.indexOf(p);
         Person p2 = new Person(index + 1, first_name.getText(), last_name.getText(), department.getText(),
-                major.getText(), email.getText(),  imageURL.getText());
+                major.getSelectionModel().getSelectedItem().toString(), email.getText(),  imageURL.getText());
         cnUtil.editUser(p.getId(), p2);
         data.remove(p);
         data.add(index, p2);
@@ -154,7 +217,7 @@ public class DB_GUI_Controller implements Initializable {
         first_name.setText(p.getFirstName());
         last_name.setText(p.getLastName());
         department.setText(p.getDepartment());
-        major.setText(p.getMajor());
+        major.getSelectionModel().select(Major.valueOf(p.getMajor())); // Set major in dropdown
         email.setText(p.getEmail());
         imageURL.setText(p.getImageURL());
     }
@@ -213,8 +276,6 @@ public class DB_GUI_Controller implements Initializable {
                     results.fname + " " + results.lname + " " + results.major);
         });
     }
-
-    private static enum Major {Business, CSC, CPIS}
 
     private static class Results {
 
